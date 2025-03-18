@@ -34,7 +34,7 @@ struct PIT_t {
 	volatile unsigned int      EDGE;
 };
 
-struct PS2_t {
+struct PS2_t { //TBD
     volatile unsigned int      DATA;
     volatile unsigned int      STATUS;
     volatile unsigned int      CONTROL;

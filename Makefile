@@ -1,6 +1,6 @@
 MAIN		:= project.c
-HDRS		:= address_map_niosv.h device_structs.h
-SRCS		:= $(MAIN)
+HDRS := address_map_niosv.h device_structs.h project_functions.h custom_defines.h
+SRCS		:= $(MAIN) project_functions.c
 
 INSTALL	:= C:/intelFPGA_pro/24.1
 
