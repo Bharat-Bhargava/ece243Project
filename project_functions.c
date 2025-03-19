@@ -148,10 +148,12 @@ void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp) {
   ps2->DATA = 0xFF;  // reset
 
   while (1) {
+    if(ps2->DATA == 0x74 || ps2->DATA == 0x6b){
     while (ps2->DATA & 0x8000) {     // extract RVALID
       char byte = ps2->DATA & 0xFF;  // extract byte
 
       ledp->DR = byte;
     }
+    } 
   }
 }
