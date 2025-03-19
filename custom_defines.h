@@ -12,6 +12,6 @@
 #define WHITE 0xFFFF
 #define BLACK 0x0000
 
-
+#define TIMERSEC 100000000  // 1 second
 
 #endif
