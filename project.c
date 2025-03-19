@@ -34,3 +34,5 @@ int main(void) {
   clear_screen(vp->fbp);
   sprite_scroll(vp->fbp);  // ghost walking horizontally
 }
+
+//hello
