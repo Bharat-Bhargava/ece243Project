@@ -32,4 +32,6 @@ void draw_screen(struct fb_t *const fbp, const unsigned short *screen);
 
 void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp);
 
+void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp);
+
 #endif

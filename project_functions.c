@@ -148,12 +148,34 @@ void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp) {
   ps2->DATA = 0xFF;  // reset
 
   while (1) {
-    if(ps2->DATA == 0x74 || ps2->DATA == 0x6b){
+    if((ps2->DATA == 0x74 || ps2->DATA == 0x6b)){
     while (ps2->DATA & 0x8000) {     // extract RVALID
       char byte = ps2->DATA & 0xFF;  // extract byte
-
+      if(ps2->DATA != 0x40){         // ignore the make code of 0x4 before displaying
       ledp->DR = byte;
+      } else{
+        continue;
+      }
     }
-    } 
+    }
   }
+}
+
+
+
+
+void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp){
+   ps2->DATA = 0xff;
+   while(1){
+    if(ps2->DATA == 0x1c || ps2->DATA == 0x23){
+      while(ps2->DATA & 0x8000){
+        char byte = ps2->DATA & 0xff;
+        if(ps2->DATA != 0x40){
+          ledp->DR = byte;
+        } else {
+          continue;
+        }
+      }
+    }
+   }
 }
