@@ -2,6 +2,7 @@
 #include "project_functions.h"
 
 #include "custom_defines.h"
+#include "device_structs.h"
 #include "screens.h"
 
 // void initialize_timer(struct timer_t *timer, uint32 period) {
@@ -139,6 +140,18 @@ void draw_screen(struct fb_t *const fbp, const unsigned short *screen) {
   for (int y = 0; y < ACTUAL_Y; y++) {
     for (int x = 0; x < ACTUAL_X; x++) {
       fbp->pixels[y][x] = screen[y * ACTUAL_X + x];
+    }
+  }
+}
+
+void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp) {
+  ps2->DATA = 0xFF;  // reset
+
+  while (1) {
+    while (ps2->DATA & 0x8000) {     // extract RVALID
+      char byte = ps2->DATA & 0xFF;  // extract byte
+
+      ledp->DR = byte;
     }
   }
 }

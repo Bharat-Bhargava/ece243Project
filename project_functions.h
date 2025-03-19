@@ -30,5 +30,6 @@ void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x, int y);
 
 void draw_screen(struct fb_t *const fbp, const unsigned short *screen);
 
+void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp);
 
 #endif
