@@ -2,8 +2,8 @@
 #define DEVICE_STRUCTS_H
 
 #include <stdlib.h>
-#include "custom_defines.h"
 
+#include "custom_defines.h"
 
 struct fb_t {
   unsigned short volatile pixels[256][512];
@@ -26,30 +26,26 @@ struct timer_t {
   volatile uint32 snaphi;
 };
 
-
 struct PIT_t {
-	volatile unsigned int      DR;
-	volatile unsigned int      DIR;
-	volatile unsigned int      MASK;
-	volatile unsigned int      EDGE;
+  volatile unsigned int DR;
+  volatile unsigned int DIR;
+  volatile unsigned int MASK;
+  volatile unsigned int EDGE;
 };
 
-struct PS2_t { //TBD
-    volatile unsigned int      DATA;
-    volatile unsigned int      STATUS;
-    volatile unsigned int      CONTROL;
+struct PS2_t {
+  volatile unsigned int DATA;
+  volatile unsigned int STATUS;
 };
-
 
 struct audio_t {
-    volatile unsigned int control;
-    volatile unsigned char rarc;
-    volatile unsigned char ralc;
-    volatile unsigned char warc;
-    volatile unsigned char walc;
-    volatile unsigned int ldata;
-    volatile unsigned int rdata;
-  };
-
+  volatile unsigned int control;
+  volatile unsigned char rarc;
+  volatile unsigned char ralc;
+  volatile unsigned char warc;
+  volatile unsigned char walc;
+  volatile unsigned int ldata;
+  volatile unsigned int rdata;
+};
 
 #endif
