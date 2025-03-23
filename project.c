@@ -3,6 +3,7 @@
 #include "address_map_niosv.h"
 #include "custom_defines.h"
 #include "device_structs.h"
+#include "interupt.h"
 #include "project_functions.h"
 #include "sprites.h"
 
@@ -39,7 +40,7 @@ void sprite_scroll(struct fb_t *const fbp) {
 
 // hello
 
-int main(void) {
+int mainer(void) {
   gameStart(vp->fbp, buttonp, ledp);
   int bat_x = 160;                             // Initial x position of the bat
   int bat_y = 20;                              // Initial y position of the bat
@@ -109,4 +110,24 @@ int main(void) {
     // Add a small delay
     // waitasec(1, timer);
   }
+}
+
+int main(void) {
+  // Processor-side setup for interrupts
+  processor_side_setup();
+
+  // Device-side setup for PS/2 interrupts
+  set_PS2_interrput();
+
+  // Main loop
+  while (1) {
+    if (ps2_flag) {  // Check if new PS/2 data is available
+      ps2_flag = 0;  // Reset the flag
+
+      // Display the PS/2 data on the LEDs
+      *(volatile int *)LEDR_BASE = ps2_data;
+    }
+  }
+
+  // gameStart(vp->fbp, buttonp, ledp);
 }

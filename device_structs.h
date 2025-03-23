@@ -35,7 +35,7 @@ struct PIT_t {
 
 struct PS2_t {
   volatile unsigned int DATA;
-  volatile unsigned int STATUS;
+  volatile unsigned int CONTROL;
 };
 
 struct audio_t {

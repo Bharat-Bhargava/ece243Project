@@ -14,4 +14,8 @@
 
 #define TIMERSEC 100000000  // 1 second
 
+// Gblobal Variables
+extern volatile int ps2_data;  // Stores the last PS/2 data byte
+extern volatile int ps2_flag;  // Flag to indicate new PS/2 data
+
 #endif
