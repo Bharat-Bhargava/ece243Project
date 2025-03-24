@@ -98,9 +98,13 @@ void PS2_ISR(void) {
       continue;     // Ignore key release events
     }
 
-    // Process valid make codes (key press events)
-    ps2_data = data;  // Store the valid data byte
-    ps2_flag = 1;     // Set the flag to indicate new data
+    if (data == 0x76) {
+      paused = !paused;  // Toggle the paused flag
+    } else {
+      // Process valid make codes (key press events)
+      ps2_data = data;  // Store the valid data byte
+      ps2_flag = 1;     // Set the flag to indicate new data
+    }
   }
 
   // Acknowledge the interrupt by re-enabling interrupts

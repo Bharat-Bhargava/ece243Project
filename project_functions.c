@@ -1,6 +1,7 @@
 
 #include "project_functions.h"
 
+#include "address_map_niosv.h"
 #include "custom_defines.h"
 #include "device_structs.h"
 #include "screens.h"
@@ -122,6 +123,30 @@ void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
     }
 }
 
+void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
+                  int prev_x, int prev_y) {
+  int sxi, syi;
+  int xi, yi;
+
+  // Clear the previous position of the sprite
+  for (sxi = 0; sxi < 16; sxi++) {
+    for (syi = 0; syi < 16; syi++) {
+      xi = prev_x + sxi;
+      yi = prev_y + syi;
+      fbp->pixels[yi][xi] = WHITE;  // Fill with background color
+    }
+  }
+
+  // Draw the sprite at the new position
+  for (sxi = 0; sxi < 16; sxi++) {
+    for (syi = 0; syi < 16; syi++) {
+      xi = x + sxi;
+      yi = y + syi;
+      fbp->pixels[yi][xi] = sprite[syi * 16 + sxi];
+    }
+  }
+}
+
 void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
                struct PIT_t *ledp) {
   clear_screen(fbp);
@@ -176,4 +201,10 @@ void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp) {
       }
     }
   }
+}
+
+void draw_pause(void) {
+  struct videoout_t *vp = (struct videoout_t *)PIXEL_BUF_CTRL_BASE;
+  draw_screen(vp->bfbp, pause_screen);
+  fbswap(vp);
 }

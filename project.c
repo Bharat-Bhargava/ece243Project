@@ -112,22 +112,105 @@ int mainer(void) {
   }
 }
 
+// int main(void) {
+//   // Processor-side setup for interrupts
+//   processor_side_setup();
+//   // Device-side setup for PS/2 interrupts
+//   set_PS2_interrput();
+
+//   // Main loop
+//   while (1) {
+//     if (ps2_flag) {  // Check if new PS/2 data is available
+//       ps2_flag = 0;  // Reset the flag
+
+//       // Display the PS/2 data on the LEDs
+//       *(volatile int *)LEDR_BASE = ps2_data;
+//     }
+//   }
+
+//   // gameStart(vp->fbp, buttonp, ledp);
+// }
+
 int main(void) {
+  gameStart(vp->fbp, buttonp, ledp);
   // Processor-side setup for interrupts
   processor_side_setup();
-
   // Device-side setup for PS/2 interrupts
   set_PS2_interrput();
 
-  // Main loop
+  // Initialize variables
+  int bat_x = 160;  // Initial x position of the bat
+  int bat_y = 220;  // Initial y position of the bat (ground level)
+  int prev_bat_x = bat_x, prev_bat_y = bat_y;  // Previous position of the bat
+  int velocity_y = 0;                          // Vertical velocity
+  const int gravity = 1;                       // Gravity pulling the bat down
+  const int jump_strength = -15;  // Initial upward velocity when jumping
+  const int ground_y = 220;       // Y position of the ground
+  const int screen_width = 320;   // Width of the screen
+  int frame = 0;                  // Current frame for animation
+
+  clear_screen(vp->fbp);
+
   while (1) {
+    if (paused) {
+      draw_pause();
+      while (paused);  // Wait until the game is unpaused
+      clear_screen(vp->fbp);
+
+      continue;
+    }
+
+    // Handle input (polling method)
     if (ps2_flag) {  // Check if new PS/2 data is available
       ps2_flag = 0;  // Reset the flag
 
-      // Display the PS/2 data on the LEDs
-      *(volatile int *)LEDR_BASE = ps2_data;
+      switch (ps2_data) {
+        case 0x1C:     // 'A' key for moving left
+          bat_x -= 5;  // Move left
+          break;
+        case 0x23:     // 'D' key for moving right
+          bat_x += 5;  // Move right
+          break;
+        default:
+          break;  // Ignore other keys
+      }
     }
+
+    // Wrap around horizontally
+    if (bat_x < 0) {
+      bat_x = screen_width - 16;  // Wrap to the right edge
+    } else if (bat_x > screen_width - 16) {
+      bat_x = 0;  // Wrap to the left edge
+    }
+
+    // Apply gravity
+    velocity_y += gravity;
+
+    // Update vertical position
+    bat_y += velocity_y;
+
+    // Check if the bat touches the ground
+    if (bat_y >= ground_y) {
+      bat_y = ground_y;            // Snap to the ground
+      velocity_y = jump_strength;  // Make the bat jump
+    }
+
+    // Draw the sprite (clear previous position and draw at new position)
+    sprite_draw2(vp->bfbp, bat[frame], bat_x, bat_y, prev_bat_x, prev_bat_y);
+
+    // Swap buffers
+    fbswap(vp);
+
+    // Update the frame for animation
+    frame = (frame + 1) % 3;
+
+    // Store the current position as the previous position
+    prev_bat_x = bat_x;
+    prev_bat_y = bat_y;
+
+    // Add a small delay to control the game speed
+    waitasec(0.025, timer);
   }
 
-  // gameStart(vp->fbp, buttonp, ledp);
+  return 0;
 }

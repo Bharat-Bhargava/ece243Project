@@ -34,4 +34,9 @@ void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp);
 
 void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp);
 
+void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
+    int prev_x, int prev_y);
+
+void draw_pause(void);
+
 #endif
