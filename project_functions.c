@@ -208,3 +208,70 @@ void draw_pause(void) {
   draw_screen(vp->bfbp, pause_screen);
   fbswap(vp);
 }
+
+/************FUNCTIONS FOR PLATFORMS!***********************8*/
+Platform platforms[MAX_PLATFORMS];
+
+void init_platforms() {
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    platforms[i].x =
+        rand() % (SCREEN_WIDTH - PLATFORM_WIDTH);  // Random x position
+    platforms[i].y =
+        SCREEN_HEIGHT - (i + 1) * 40;      // Space platforms vertically
+    platforms[i].prev_x = platforms[i].x;  // Initialize previous x
+    platforms[i].prev_y = platforms[i].y;  // Initialize previous y
+    platforms[i].width = PLATFORM_WIDTH;
+    platforms[i].height = PLATFORM_HEIGHT;
+  }
+}
+
+void draw_platforms(struct fb_t *const fbp, int erase) {
+    for (int i = 0; i < MAX_PLATFORMS; i++) {
+        // Determine the color based on the erase flag
+        unsigned short color = erase ? WHITE : BLACK;
+
+        // Iterate over the platform's area
+        for (int x = 0; x < platforms[i].width; x++) {
+            for (int y = 0; y < platforms[i].height; y++) {
+                int px = platforms[i].x + x;
+                int py = platforms[i].y + y;
+
+                // Ensure we don't go out of bounds
+                if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT) {
+                    fbp->pixels[py][px] = color;  // Set the pixel color
+                }
+            }
+        }
+
+        // Update the previous position to the current position
+        if (!erase) {
+            platforms[i].prev_x = platforms[i].x;
+            platforms[i].prev_y = platforms[i].y;
+        }
+    }
+}
+void update_platforms(int bat_y) {
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    // Move platforms downward as the bat jumps higher
+    platforms[i].y += (220 - bat_y) / 10;
+
+    // Remove platforms that move off the bottom of the screen
+    if (platforms[i].y > SCREEN_HEIGHT) {
+      platforms[i].x =
+          rand() %
+          (SCREEN_WIDTH - PLATFORM_WIDTH);  // Generate new platform at the top
+      platforms[i].y = -PLATFORM_HEIGHT;    // Place it just above the screen
+    }
+  }
+}
+int check_collision(int bat_x, int bat_y) {
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    if (bat_y + 16 >= platforms[i].y &&
+        bat_y + 16 <= platforms[i].y + platforms[i].height &&
+        bat_x + 16 >= platforms[i].x &&
+        bat_x <= platforms[i].x + platforms[i].width) {
+      return 1;  // Collision detected
+    }
+  }
+  return 0;  // No collision
+}

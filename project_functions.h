@@ -14,6 +14,7 @@ uint32 read_buttons(void);
 void set_leds(uint32 value);
 
 */
+
 void plot_pixel(int x, int y, short int line_color, struct fb_t *const fbp);
 void clear_screen(struct fb_t *const fbp);
 int abs(int num);
@@ -35,8 +36,14 @@ void keyboard(struct PS2_t *const ps2, struct PIT_t *const ledp);
 void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp);
 
 void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
-    int prev_x, int prev_y);
+                  int prev_x, int prev_y);
 
 void draw_pause(void);
+
+// Platform FUNC declarations
+void init_platforms();
+void draw_platforms(struct fb_t *const fbp, int erase);
+void update_platforms(int bat_y);
+int check_collision(int bat_x, int bat_y);
 
 #endif

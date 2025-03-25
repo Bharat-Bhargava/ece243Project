@@ -14,6 +14,23 @@
 
 #define TIMERSEC 100000000  // 1 second
 
+// Platform Type defines
+
+#define MAX_PLATFORMS 5  // Maximum number of platforms on the screen
+#define PLATFORM_WIDTH 32
+#define PLATFORM_HEIGHT 8
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+
+typedef struct {
+  int x;       // Current X position of the platform
+  int y;       // Current Y position of the platform
+  int prev_x;  // Previous X position of the platform
+  int prev_y;  // Previous Y position of the platform
+  int width;   // Width of the platform
+  int height;  // Height of the platform
+} Platform;
+
 // Gblobal Variables
 extern volatile int ps2_data;  // Stores the last PS/2 data byte
 extern volatile int ps2_flag;  // Flag to indicate new PS/2 data
