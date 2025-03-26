@@ -350,6 +350,8 @@ int main(void) {
     prev_bat_x = bat_x;
     prev_bat_y = bat_y;
 
+    score(bat_y);
+
     // Add delay
     waitasec2(0.025, timer);
   }
