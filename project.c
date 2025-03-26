@@ -107,6 +107,8 @@ int mainer(void) {
     prev_bat_x = bat_x;
     prev_bat_y = bat_y;
 
+    score(bat_y);
+
     // Add a small delay
     // waitasec(1, timer);
   }
