@@ -5,6 +5,7 @@
 #include "custom_defines.h"
 #include "device_structs.h"
 #include "screens.h"
+#include "sprites.h"
 
 // void initialize_timer(struct timer_t *timer, uint32 period) {
 //   timer->control = 0;  // Disable timer
@@ -110,6 +111,18 @@ void waitasec(int pow_fraction, struct timer_t *timer) {
   timer->status = 0;  // reset TO
 }
 
+void waitasec2(float seconds, struct timer_t *timer) {
+  unsigned int t =
+      (unsigned int)(TIMERSEC * seconds);  // Calculate the precise delay
+  timer->control = 0x8;                    // Stop the timer
+  timer->status = 0;                       // Reset TO
+  timer->periodlo = (t & 0x0000FFFF);
+  timer->periodhi = (t & 0xFFFF0000) >> 16;
+  timer->control = 0x4;                // Start the timer
+  while ((timer->status & 0x1) == 0);  // Wait for the timer to expire
+  timer->status = 0;                   // Reset TO
+}
+
 void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
                  int y) {
   int sxi, syi;
@@ -206,5 +219,81 @@ void keyboard2(struct PS2_t *const ps2, struct PIT_t *const ledp) {
 void draw_pause(void) {
   struct videoout_t *vp = (struct videoout_t *)PIXEL_BUF_CTRL_BASE;
   draw_screen(vp->bfbp, pause_screen);
+  fbswap(vp);
+}
+
+// Input handling function
+void handle_input(int *move_left, int *move_right) {
+  if (ps2_flag) {  // Check if new PS/2 data is available
+    ps2_flag = 0;  // Reset the flag
+
+    if (ps2_data & 0x80) {                 // Key release
+      int released_key = ps2_data & 0x7F;  // Extract the key code
+      switch (released_key) {
+        case 0x1C:  // 'A' key released
+          *move_left = 0;
+          break;
+        case 0x23:  // 'D' key released
+          *move_right = 0;
+          break;
+        default:
+          break;
+      }
+    } else {  // Key press
+      switch (ps2_data) {
+        case 0x1C:  // 'A' key pressed
+          *move_left = 1;
+          *move_right = 0;  // Ensure mutual exclusivity
+          break;
+        case 0x23:  // 'D' key pressed
+          *move_right = 1;
+          *move_left = 0;  // Ensure mutual exclusivity
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+// Movement update function
+void update_movement(int *bat_x, int *bat_y, int *velocity_y, int move_left,
+                     int move_right, int gravity, int jump_strength,
+                     int ground_y, int screen_width) {
+  // Apply movement based on key states
+  if (move_left) {
+    *bat_x -= 5;
+  }
+  if (move_right) {
+    *bat_x += 5;
+  }
+
+  // Wrap around horizontally
+  if (*bat_x < 0) {
+    *bat_x = screen_width - 16;  // Wrap to the right edge
+  } else if (*bat_x > screen_width - 16) {
+    *bat_x = 0;  // Wrap to the left edge
+  }
+
+  // Apply gravity
+  *velocity_y += gravity;
+
+  // Update vertical position
+  *bat_y += *velocity_y;
+
+  // Check if the bat touches the ground
+  if (*bat_y >= ground_y) {
+    *bat_y = ground_y;            // Snap to the ground
+    *velocity_y = jump_strength;  // Make the bat jump
+  }
+}
+
+// Drawing function
+void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
+                 int prev_bat_x, int prev_bat_y) {
+  // Draw the sprite (clear previous position and draw at new position)
+  sprite_draw2(vp->bfbp, bat[frame], bat_x, bat_y, prev_bat_x, prev_bat_y);
+
+  // Swap buffers
   fbswap(vp);
 }

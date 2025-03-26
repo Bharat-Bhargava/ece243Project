@@ -14,7 +14,7 @@
 //   ps2->DATA = 0xFF;    // Reset the PS/2 device
 // }
 void set_PS2_interrput(void) {
-  struct PS2_t *const ps2 = (int *)PS2_BASE;
+  struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;
 
   ps2->CONTROL = 0x1;  // Enable interrupts (set RE bit)
 
@@ -22,7 +22,7 @@ void set_PS2_interrput(void) {
   // ps2->DATA = 0xFF;  // Reset command
 
   // Read the acknowledgment byte (should be 0xFA for ACK)
-  volatile int ack = ps2->DATA & 0xFF;
+  // volatile int ack = ps2->DATA & 0xFF;
 
   // Clear the FIFO by reading all available data only if RAVAIL > 0
   while ((ps2->DATA >> 16) & 0xFF) {        // Check RAVAIL (bits 31:16)
@@ -73,7 +73,7 @@ void set_PS2_interrput(void) {
 // }
 
 void PS2_ISR(void) {
-  struct PS2_t *const ps2 = (int *)PS2_BASE;
+  struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;
   static int isBreak = 0;  // Flag to track break code sequence
 
   // Fully clear the FIFO by reading all available data
@@ -94,16 +94,23 @@ void PS2_ISR(void) {
     }
 
     if (isBreak) {
-      isBreak = 0;  // Reset the break flag
-      continue;     // Ignore key release events
+      // Key release: pass the released key to the main loop
+      ps2_data = data | 0x80;  // Mark the key as released (add 0x80)
+      ps2_flag = 1;            // Set the flag to indicate new data
+      isBreak = 0;             // Reset the break flag
+      continue;
     }
 
-    if (data == 0x76) {
-      paused = !paused;  // Toggle the paused flag
-    } else {
-      // Process valid make codes (key press events)
-      ps2_data = data;  // Store the valid data byte
-      ps2_flag = 1;     // Set the flag to indicate new data
+    // Handle the pause key (e.g., 0x76 for the Pause key)
+    if (data == 0x76) {  // Pause key pressed
+      paused = !paused;  // Toggle the paused state
+      continue;          // Skip further processing for the pause key
+    }
+
+    // Process valid make codes (key press events)
+    if (data != 0xF0) {  // Ignore stray break codes
+      ps2_data = data;   // Store the valid data byte
+      ps2_flag = 1;      // Set the flag to indicate new data
     }
   }
 

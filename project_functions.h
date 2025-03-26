@@ -39,4 +39,14 @@ void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
 
 void draw_pause(void);
 
+
+void waitasec2(float seconds, struct timer_t *timer); // improved game delay
+
+
+//Main game loop clean up helper functions
+void handle_input(int *move_left, int *move_right);
+void update_movement(int *bat_x, int *bat_y, int *velocity_y, int move_left, int move_right, int gravity, int jump_strength, int ground_y, int screen_width);
+void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y, int prev_bat_x, int prev_bat_y);
+
+
 #endif
