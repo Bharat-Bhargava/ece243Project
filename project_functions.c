@@ -297,3 +297,115 @@ void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
   // Swap buffers
   fbswap(vp);
 }
+
+#include <stdlib.h>  // For rand()
+
+#include "project_functions.h"
+
+// Initialize platforms
+void init_platforms(Platform platforms[], int screen_width, int screen_height) {
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    platforms[i].x =
+        rand() % (screen_width - PLATFORM_WIDTH);  // Random x position
+    platforms[i].y = screen_height - (i * 50);     // Space platforms vertically
+    platforms[i].width = PLATFORM_WIDTH;           // Platform width
+    platforms[i].height = PLATFORM_HEIGHT;         // Platform height
+    platforms[i].prev_x = platforms[i].x;          // Initialize previous x
+    platforms[i].prev_y = platforms[i].y;          // Initialize previous y
+  }
+}
+
+// Draw or erase platforms
+void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
+  unsigned short color =
+      erase ? WHITE : BLACK;  // Use WHITE to erase, BLACK to draw
+
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    for (int x = 0; x < platforms[i].width; x++) {
+      for (int y = 0; y < platforms[i].height; y++) {
+        int px = platforms[i].x + x;
+        int py = platforms[i].y + y;
+
+        // Ensure drawing stays within screen bounds
+        if (px >= 0 && px < 320 && py >= 0 && py < 240) {
+          fbp->pixels[py][px] = color;
+        }
+      }
+    }
+
+    // Update previous positions if drawing
+    if (!erase) {
+      platforms[i].prev_x = platforms[i].x;
+      platforms[i].prev_y = platforms[i].y;
+    }
+  }
+}
+
+// Update platform positions
+void update_platforms(Platform platforms[], int bat_y, int screen_width,
+                      int screen_height) {
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    platforms[i].y +=
+        (240 / 2 - bat_y) / 10;  // Move platforms up as the bat moves higher
+
+    // Recycle platforms that move off the screen
+    if (platforms[i].y > screen_height) {
+      platforms[i].x =
+          rand() % (screen_width - PLATFORM_WIDTH);  // New random x position
+      platforms[i].y = -PLATFORM_HEIGHT;             // Place above the screen
+    }
+  }
+}
+
+void check_collision(Platform platforms[], int *bat_x, int *bat_y,
+                     int *velocity_y, int jump_strength) {
+  // Check for collisions with each platform
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    // Check if the bat's bottom edge is within the platform's vertical range
+    if (*bat_y + 16 >=
+            platforms[i]
+                .y &&  // Bat's bottom edge is at or below the platform's top
+        *bat_y + 16 <= platforms[i].y +
+                           platforms[i].height &&  // Bat's bottom edge is above
+                                                   // the platform's bottom
+        *bat_x + 15 >= platforms[i].x &&  // Bat's right edge is at or beyond
+                                          // the platform's left edge
+        *bat_x <= platforms[i].x +
+                      platforms[i].width &&  // Bat's left edge is at or before
+                                             // the platform's right edge
+        *velocity_y > 0) {           // Only check for collisions when falling
+      *bat_y = platforms[i].y - 16;  // Snap the bat to the top of the platform
+      *velocity_y = jump_strength;   // Make the bat jump
+      return;  // Exit the function after handling the collision
+    }
+  }
+}
+void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
+                    int move_right, int gravity, int jump_strength,
+                    int screen_width) {
+  // Apply horizontal movement
+  if (move_left) {
+    *bat_x -= 5;
+  }
+  if (move_right) {
+    *bat_x += 5;
+  }
+
+  // Wrap around horizontally
+  if (*bat_x < 0) {
+    *bat_x = screen_width - 16;  // Wrap to the right edge
+  } else if (*bat_x > screen_width - 16) {
+    *bat_x = 0;  // Wrap to the left edge
+  }
+
+  // Apply gravity
+  *velocity_y += gravity;
+
+  // Cap the downward velocity (terminal velocity)
+  if (*velocity_y > 10) {  // Adjust this value for smoother falling
+    *velocity_y = 10;
+  }
+
+  // Update vertical position
+  *bat_y += *velocity_y;
+}

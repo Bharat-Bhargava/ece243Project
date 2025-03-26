@@ -216,32 +216,93 @@ int mainer(void) {
 #include "project_functions.h"
 #include "sprites.h"
 
+// int main(void) {
+//   gameStart(vp->fbp, buttonp, ledp);
+//   processor_side_setup();
+//   set_PS2_interrput();
+
+//   // Initialize variables
+//   int bat_x = 160;  // Initial x position of the bat
+//   int bat_y = 220;  // Initial y position of the bat (ground level)
+//   int prev_bat_x = bat_x, prev_bat_y = bat_y;  // Previous position of the
+//   bat int velocity_y = 0;                          // Vertical velocity const
+//   int gravity = 1;                       // Gravity pulling the bat down
+//   const int jump_strength = -15;  // Initial upward velocity when jumping
+//   const int ground_y = 220;       // Y position of the ground
+//   const int screen_width = 320;   // Width of the screen
+//   int frame = 0;                  // Current frame for animation
+
+//   // Key state tracking
+//   int move_left = 0;   // Flag for moving left
+//   int move_right = 0;  // Flag for moving right
+
+//   clear_screen(vp->fbp);
+
+//   while (1) {
+//     if (paused) {
+//       draw_pause();
+//       while (paused);  // Wait until the game is unpaused
+//       clear_screen(vp->fbp);
+//       continue;
+//     }
+
+//     // Handle input
+//     handle_input(&move_left, &move_right);
+
+//     // Update movement
+//     update_movement(&bat_x, &bat_y, &velocity_y, move_left, move_right,
+//     gravity,
+//                     jump_strength, ground_y, screen_width);
+
+//     // Draw the sprite
+//     draw_sprite(vp, frame, bat_x, bat_y, prev_bat_x, prev_bat_y);
+
+//     // Update the frame for animation
+//     frame = (frame + 1) % 3;
+
+//     // Store the current position as the previous position
+//     prev_bat_x = bat_x;
+//     prev_bat_y = bat_y;
+
+//     // Add a small delay to control the game speed
+//     waitasec2(0.025, timer);
+//   }
+
+//   return 0;
+// }
+
 int main(void) {
   gameStart(vp->fbp, buttonp, ledp);
   processor_side_setup();
   set_PS2_interrput();
 
   // Initialize variables
-  int bat_x = 160;  // Initial x position of the bat
-  int bat_y = 220;  // Initial y position of the bat (ground level)
+  int bat_x = 160;                             // Initial x position of the bat
+  int bat_y = 100;                             // Initial y position of the bat
   int prev_bat_x = bat_x, prev_bat_y = bat_y;  // Previous position of the bat
   int velocity_y = 0;                          // Vertical velocity
   const int gravity = 1;                       // Gravity pulling the bat down
   const int jump_strength = -15;  // Initial upward velocity when jumping
-  const int ground_y = 220;       // Y position of the ground
   const int screen_width = 320;   // Width of the screen
+  const int screen_height = 240;  // Height of the screen
   int frame = 0;                  // Current frame for animation
 
   // Key state tracking
-  int move_left = 0;   // Flag for moving left
-  int move_right = 0;  // Flag for moving right
+  int move_left = 0;
+  int move_right = 0;
+
+  // Platform data
+  Platform platforms[MAX_PLATFORMS];
+
+  // Initialize platforms
+  init_platforms(platforms, screen_width, screen_height);
 
   clear_screen(vp->fbp);
 
   while (1) {
     if (paused) {
       draw_pause();
-      while (paused);  // Wait until the game is unpaused
+      while (paused);
       clear_screen(vp->fbp);
       continue;
     }
@@ -249,21 +310,45 @@ int main(void) {
     // Handle input
     handle_input(&move_left, &move_right);
 
-    // Update movement
-    update_movement(&bat_x, &bat_y, &velocity_y, move_left, move_right, gravity,
-                    jump_strength, ground_y, screen_width);
+    // Update physics
+    // Corrected function call
+    update_physics(&bat_x, &bat_y, &velocity_y, move_left, move_right, gravity,
+                   jump_strength, screen_width);
+
+    // Check for platform collisions
+    check_collision(platforms, &bat_x, &bat_y, &velocity_y, jump_strength);
+
+    // Check if the bat falls below the screen
+    if (bat_y > screen_height) {  // Only reset if the bat is below the screen
+      gameStart(vp->fbp, buttonp, ledp);
+      bat_x = 160;  // Reset bat's position
+      bat_y = 100;
+      velocity_y = 0;  // Reset velocity
+      init_platforms(platforms, screen_width,
+                     screen_height);  // Reinitialize platforms
+      clear_screen(vp->fbp);
+      continue;
+    }
+
+    // Update platforms
+    draw_platforms(vp->bfbp, platforms, 1);  // Erase platforms
+    update_platforms(platforms, bat_y, screen_width, screen_height);
+    draw_platforms(vp->bfbp, platforms, 0);  // Draw platforms
 
     // Draw the sprite
-    draw_sprite(vp, frame, bat_x, bat_y, prev_bat_x, prev_bat_y);
+    sprite_draw2(vp->bfbp, bat[frame], bat_x, bat_y, prev_bat_x, prev_bat_y);
 
-    // Update the frame for animation
+    // Swap buffers
+    fbswap(vp);
+
+    // Update animation frame
     frame = (frame + 1) % 3;
 
-    // Store the current position as the previous position
+    // Store previous position
     prev_bat_x = bat_x;
     prev_bat_y = bat_y;
 
-    // Add a small delay to control the game speed
+    // Add delay
     waitasec2(0.025, timer);
   }
 
