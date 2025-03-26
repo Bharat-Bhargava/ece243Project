@@ -409,11 +409,11 @@ void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
 
 
 //Score update code below and display on HEX
-volatile uint32_t *hex3_hex0_ptr = (volatile uint32_t *) HEX3_HEX0_BASE;
-volatile uint32_t *hex5_hex4_ptr = (volatile uint32_t *) HEX5_HEX4_BASE;
+volatile unsigned int *hex3_hex0_ptr = (volatile uint32_t *) HEX3_HEX0_BASE;
+volatile unsigned int *hex5_hex4_ptr = (volatile uint32_t *) HEX5_HEX4_BASE;
 
 // Seven-segment display encoding for digits 0-9 (adjust if needed)
-const uint8_t hex_segs[10] = {
+const unsigned char hex_segs[10] = {
     0x3F, // 0
     0x06, // 1
     0x5B, // 2
@@ -427,13 +427,12 @@ const uint8_t hex_segs[10] = {
 };
 
 
+int highest_y = 20;    // Track the highest position (lowest y value)
 void score(int currentBat_y){
-    int batInitial = 20;
-    int highest_y = batInitial;     // Track the highest position (lowest y value)
-    int score = 0;
+int score = 0;
 
    // If the bat is higher than ever before (smaller y-value)
-    if (currentBat_y < highest_y) {
+    if (currentBat_y > highest_y) {
         // Increase score by the difference in height
         score += highest_y - currentBat_y;
         highest_y = currentBat_y;
@@ -441,7 +440,7 @@ void score(int currentBat_y){
 }
 
 void display_score(int score) {
-    uint8_t digits[6];
+    unsigned char digits[6];
     int i;
     
     // Extract 6 digits from the score (least significant first).
@@ -451,10 +450,10 @@ void display_score(int score) {
     }
     
     // Pack HEX5 and HEX4: HEX5 gets digits[5] and HEX4 gets digits[4].
-    uint32_t hex5_hex4_val = (hex_segs[digits[5]] << 8) | hex_segs[digits[4]];
+    unsigned int hex5_hex4_val = (hex_segs[digits[5]] << 8) | hex_segs[digits[4]];
     
     // Pack HEX3, HEX2, HEX1, HEX0.
-    uint32_t hex3_hex0_val = (hex_segs[digits[3]] << 24) |
+    unsigned int hex3_hex0_val = (hex_segs[digits[3]] << 24) |
                              (hex_segs[digits[2]] << 16) |
                              (hex_segs[digits[1]] << 8)  |
                              (hex_segs[digits[0]]);
