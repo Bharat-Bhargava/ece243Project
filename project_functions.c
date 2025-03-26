@@ -409,8 +409,8 @@ void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
 
 
 //Score update code below and display on HEX
-volatile unsigned int *hex3_hex0_ptr = (volatile uint32_t *) HEX3_HEX0_BASE;
-volatile unsigned int *hex5_hex4_ptr = (volatile uint32_t *) HEX5_HEX4_BASE;
+volatile unsigned int *hex3_hex0_ptr = (volatile unsigned int *) HEX3_HEX0_BASE;
+volatile unsigned int *hex5_hex4_ptr = (volatile unsigned int *) HEX5_HEX4_BASE;
 
 // Seven-segment display encoding for digits 0-9 (adjust if needed)
 const unsigned char hex_segs[10] = {
