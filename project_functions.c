@@ -434,7 +434,7 @@ int score = 0;
    // If the bat is higher than ever before (smaller y-value)
     if (currentBat_y > highest_y) {
         // Increase score by the difference in height
-        score += highest_y - currentBat_y;
+        score += highest_y + currentBat_y;    //score = score + highestY + currentBatY
         highest_y = currentBat_y;
     }
 }
