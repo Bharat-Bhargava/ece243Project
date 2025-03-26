@@ -357,29 +357,26 @@ void update_platforms(Platform platforms[], int bat_y, int screen_width,
   }
 }
 
+#define BAT_WIDTH 15
+#define BAT_HEIGHT 16
+
 void check_collision(Platform platforms[], int *bat_x, int *bat_y,
                      int *velocity_y, int jump_strength) {
-  // Check for collisions with each platform
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-    // Check if the bat's bottom edge is within the platform's vertical range
-    if (*bat_y + 16 >=
-            platforms[i]
-                .y &&  // Bat's bottom edge is at or below the platform's top
-        *bat_y + 16 <= platforms[i].y +
-                           platforms[i].height &&  // Bat's bottom edge is above
-                                                   // the platform's bottom
-        *bat_x + 15 >= platforms[i].x &&  // Bat's right edge is at or beyond
-                                          // the platform's left edge
-        *bat_x <= platforms[i].x +
-                      platforms[i].width &&  // Bat's left edge is at or before
-                                             // the platform's right edge
-        *velocity_y > 0) {           // Only check for collisions when falling
-      *bat_y = platforms[i].y - 16;  // Snap the bat to the top of the platform
-      *velocity_y = jump_strength;   // Make the bat jump
-      return;  // Exit the function after handling the collision
+    // Check if the bat and platform rectangles intersect
+    if (*bat_x < platforms[i].x + platforms[i].width &&
+        *bat_x + BAT_WIDTH > platforms[i].x &&
+        *bat_y < platforms[i].y + platforms[i].height &&
+        *bat_y + BAT_HEIGHT > platforms[i].y &&
+        *velocity_y > 0) {
+      // Snap the bat to the top of the platform
+      *bat_y = platforms[i].y - BAT_HEIGHT;
+      *velocity_y = jump_strength;
+      return;
     }
   }
 }
+
 void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
                     int move_right, int gravity, int jump_strength,
                     int screen_width) {
