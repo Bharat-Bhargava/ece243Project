@@ -272,7 +272,7 @@ int mainer(void) {
 
 //   return 0;
 // }
-
+extern total_distance;
 int main(void) {
   gameStart(vp->fbp, buttonp, ledp);
   processor_side_setup();
@@ -320,12 +320,19 @@ int main(void) {
     // Check for platform collisions
     check_collision(platforms, &bat_x, &bat_y, &velocity_y, jump_strength);
 
+    // Update score based on upward movement
+    score(bat_y, prev_bat_y);
+
+    // Display the updated score on the HEX display
+    display_score();
+
     // Check if the bat falls below the screen
     if (bat_y > screen_height) {  // Only reset if the bat is below the screen
       gameStart(vp->fbp, buttonp, ledp);
       bat_x = 160;  // Reset bat's position
       bat_y = 100;
-      velocity_y = 0;  // Reset velocity
+      velocity_y = 0;      // Reset velocity
+      total_distance = 0;  // Reset the score
       init_platforms(platforms, screen_width,
                      screen_height);  // Reinitialize platforms
       clear_screen(vp->fbp);
@@ -350,11 +357,9 @@ int main(void) {
     prev_bat_x = bat_x;
     prev_bat_y = bat_y;
 
-    score(bat_y);
-
     // Add delay
     waitasec2(0.025, timer);
   }
 
   return 0;
-}/// test
+}  /// test

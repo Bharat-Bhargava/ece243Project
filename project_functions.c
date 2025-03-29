@@ -367,8 +367,7 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
     if (*bat_x < platforms[i].x + platforms[i].width &&
         *bat_x + BAT_WIDTH > platforms[i].x &&
         *bat_y < platforms[i].y + platforms[i].height &&
-        *bat_y + BAT_HEIGHT > platforms[i].y &&
-        *velocity_y > 0) {
+        *bat_y + BAT_HEIGHT > platforms[i].y && *velocity_y > 0) {
       // Snap the bat to the top of the platform
       *bat_y = platforms[i].y - BAT_HEIGHT;
       *velocity_y = jump_strength;
@@ -407,60 +406,54 @@ void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
   *bat_y += *velocity_y;
 }
 
-
-//Score update code below and display on HEX
-volatile unsigned int *hex3_hex0_ptr = (volatile unsigned int *) HEX3_HEX0_BASE;
-volatile unsigned int *hex5_hex4_ptr = (volatile unsigned int *) HEX5_HEX4_BASE;
+// Score update code below and display on HEX
+volatile unsigned int *hex3_hex0_ptr = (volatile unsigned int *)HEX3_HEX0_BASE;
+volatile unsigned int *hex5_hex4_ptr = (volatile unsigned int *)HEX5_HEX4_BASE;
 
 // Seven-segment display encoding for digits 0-9 (adjust if needed)
 const unsigned char hex_segs[10] = {
-    0x3F, // 0
-    0x06, // 1
-    0x5B, // 2
-    0x4F, // 3
-    0x66, // 4
-    0x6D, // 5
-    0x7D, // 6
-    0x07, // 7
-    0x7F, // 8
-    0x6F  // 9
+    0x3F,  // 0
+    0x06,  // 1
+    0x5B,  // 2
+    0x4F,  // 3
+    0x66,  // 4
+    0x6D,  // 5
+    0x7D,  // 6
+    0x07,  // 7
+    0x7F,  // 8
+    0x6F   // 9
 };
 
+int highest_y = 240;     // Track the highest position (lowest y value)
+int total_score = 0;     // Initialize the score to 0
+int total_distance = 0;  // Total upward distance climbed
 
-int highest_y = 20;    // Track the highest position (lowest y value)
-void score(int currentBat_y){
-int score = 0;
-
-   // If the bat is higher than ever before (smaller y-value)
-    if (currentBat_y > highest_y) {
-        // Increase score by the difference in height
-        score += highest_y + currentBat_y;    //score = score + highestY + currentBatY
-        highest_y = currentBat_y;
-    }
+void score(int currentBat_y, int prevBat_y) {
+  // If the bat moves upward (currentBat_y < prevBat_y)
+  if (currentBat_y < prevBat_y) {
+    total_distance += (prevBat_y - currentBat_y);  // Add the upward distance
+  }
 }
+void display_score() {
+  unsigned char digits[6] = {0};  // Array to store up to 6 digits
+  int score = total_distance;     // Use the global total_distance variable
+  int i;
 
-void display_score(int score) {
-    unsigned char digits[6];
-    int i;
-    
-    // Extract 6 digits from the score (least significant first).
-    for (i = 0; i < 6; i++) {
-        digits[i] = score % 10;
-        score /= 10;
-    }
-    
-    // Pack HEX5 and HEX4: HEX5 gets digits[5] and HEX4 gets digits[4].
-    unsigned int hex5_hex4_val = (hex_segs[digits[5]] << 8) | hex_segs[digits[4]];
-    
-    // Pack HEX3, HEX2, HEX1, HEX0.
-    unsigned int hex3_hex0_val = (hex_segs[digits[3]] << 24) |
-                             (hex_segs[digits[2]] << 16) |
-                             (hex_segs[digits[1]] << 8)  |
-                             (hex_segs[digits[0]]);
-    
-    // Write the packed values to the HEX display registers.
-    *hex5_hex4_ptr = hex5_hex4_val;
-    *hex3_hex0_ptr = hex3_hex0_val;
+  // Extract 6 digits from the score (least significant first)
+  for (i = 0; i < 6; i++) {
+    digits[i] = score % 10;  // Get the least significant digit
+    score /= 10;             // Remove the least significant digit
+  }
+
+  // Pack HEX5 and HEX4: HEX5 gets digits[5] and HEX4 gets digits[4]
+  unsigned int hex5_hex4_val = (hex_segs[digits[5]] << 8) | hex_segs[digits[4]];
+
+  // Pack HEX3, HEX2, HEX1, HEX0
+  unsigned int hex3_hex0_val = (hex_segs[digits[3]] << 24) |
+                               (hex_segs[digits[2]] << 16) |
+                               (hex_segs[digits[1]] << 8) | hex_segs[digits[0]];
+
+  // Write the packed values to the HEX display registers
+  *hex5_hex4_ptr = hex5_hex4_val;
+  *hex3_hex0_ptr = hex3_hex0_val;
 }
-
-
