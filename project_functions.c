@@ -305,16 +305,21 @@ void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
 // Initialize platforms
 void init_platforms(Platform platforms[], int screen_width, int screen_height) {
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-    platforms[i].x =
-        rand() % (screen_width - PLATFORM_WIDTH);  // Random x position
-    platforms[i].y = screen_height - (i * 50);     // Space platforms vertically
-    platforms[i].width = PLATFORM_WIDTH;           // Platform width
-    platforms[i].height = PLATFORM_HEIGHT;         // Platform height
-    platforms[i].prev_x = platforms[i].x;          // Initialize previous x
-    platforms[i].prev_y = platforms[i].y;          // Initialize previous y
+      if (i == 0) {
+          // Place the first platform at the bottom of the screen
+          platforms[i].x = (screen_width - PLATFORM_WIDTH) / 2;  // Centered horizontally
+          platforms[i].y = screen_height - PLATFORM_HEIGHT;      // At the bottom
+      } else {
+          // Randomly position the other platforms
+          platforms[i].x = rand() % (screen_width - PLATFORM_WIDTH);
+          platforms[i].y = screen_height - (i * 50);  // Space platforms vertically
+      }
+      platforms[i].width = PLATFORM_WIDTH;
+      platforms[i].height = PLATFORM_HEIGHT;
+      platforms[i].prev_x = platforms[i].x;
+      platforms[i].prev_y = platforms[i].y;
   }
 }
-
 // Draw or erase platforms
 void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
   unsigned short color =

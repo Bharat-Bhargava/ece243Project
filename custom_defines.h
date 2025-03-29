@@ -12,6 +12,9 @@
 #define WHITE 0xFFFF
 #define BLACK 0x0000
 
+#define BAT_HEIGHT 16
+#define BAT_WIDTH 16
+
 #define TIMERSEC 100000000  // 1 second
 
 // Gblobal Variables
