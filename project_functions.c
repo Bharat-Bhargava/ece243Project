@@ -163,12 +163,17 @@ void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
 void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
                struct PIT_t *ledp) {
   clear_screen(fbp);
-  buttonp->EDGE = 0xF;  // clear edge bits
+  buttonp->EDGE = 0xF;  // Clear edge bits
   draw_screen(fbp, start_screen);
   // batAudio(mainScreenSamples, num_samples);
+
   while (1) {
     ledp->DR = buttonp->DR;
-    if (buttonp->EDGE & 0x1) {
+    if (buttonp->EDGE & 0x1) {  // Key 1 pressed
+      hard_mode = 1;            // Enable hard mode
+      break;
+    } else if (buttonp->EDGE & 0x2) {  // Key 2 pressed
+      hard_mode = 0;                   // Disable hard mode (normal mode)
       break;
     }
   }
@@ -305,23 +310,28 @@ void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
 
 // Initialize platforms
 void init_platforms(Platform platforms[], int screen_width, int screen_height) {
+  int platform_width = hard_mode
+                           ? PLATFORM_WIDTH / 2
+                           : PLATFORM_WIDTH;  // Smaller platforms in hard mode
+  int platform_height = PLATFORM_HEIGHT;      // Height remains the same
+
   for (int i = 0; i < MAX_PLATFORMS; i++) {
     if (i == 0) {
       // Place the first platform at the bottom of the screen
       platforms[i].x =
-          (screen_width - PLATFORM_WIDTH) / 2;  // Centered horizontally
-      platforms[i].y = screen_height - PLATFORM_HEIGHT;  // At the bottom
+          (screen_width - platform_width) / 2;  // Centered horizontally
+      platforms[i].y = screen_height - platform_height;  // At the bottom
       platforms[i].is_red = 0;  // The first platform is always safe
     } else {
       // Randomly position the other platforms
-      platforms[i].x = rand() % (screen_width - PLATFORM_WIDTH);
+      platforms[i].x = rand() % (screen_width - platform_width);
       platforms[i].y = screen_height - (i * 50);  // Space platforms vertically
 
       // Assign red platforms with a 10% chance
       platforms[i].is_red = (rand() % 10 == 0);
     }
-    platforms[i].width = PLATFORM_WIDTH;
-    platforms[i].height = PLATFORM_HEIGHT;
+    platforms[i].width = platform_width;
+    platforms[i].height = platform_height;
     platforms[i].prev_x = platforms[i].x;
     platforms[i].prev_y = platforms[i].y;
   }

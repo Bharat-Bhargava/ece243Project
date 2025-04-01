@@ -21,5 +21,6 @@
 extern volatile int ps2_data;  // Stores the last PS/2 data byte
 extern volatile int ps2_flag;  // Flag to indicate new PS/2 data
 extern volatile int paused;    // 0 = running, 1 = paused
+extern int hard_mode;  // 0 = normal mode, 1 = hard mode
 
 #endif
