@@ -62,8 +62,8 @@ typedef struct {
   int height;  // Height of the platform
   int prev_x;  // Previous X position (for erasing)
   int prev_y;  // Previous Y position (for erasing)
+  int is_red;  // 1 if the platform is red, 0 otherwise
 } Platform;
-
 // Function prototypes
 void init_platforms(Platform platforms[], int screen_width, int screen_height);
 void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase);

@@ -1,12 +1,11 @@
-
 #include "project_functions.h"
 
 #include "address_map_niosv.h"
+#include "audio.h"
 #include "custom_defines.h"
 #include "device_structs.h"
 #include "screens.h"
 #include "sprites.h"
-#include "audio.h"
 
 // void initialize_timer(struct timer_t *timer, uint32 period) {
 //   timer->control = 0;  // Disable timer
@@ -166,7 +165,7 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
   clear_screen(fbp);
   buttonp->EDGE = 0xF;  // clear edge bits
   draw_screen(fbp, start_screen);
-  batAudio(mainScreenSamples, num_samples);
+  // batAudio(mainScreenSamples, num_samples);
   while (1) {
     ledp->DR = buttonp->DR;
     if (buttonp->EDGE & 0x1) {
@@ -307,27 +306,34 @@ void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
 // Initialize platforms
 void init_platforms(Platform platforms[], int screen_width, int screen_height) {
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-      if (i == 0) {
-          // Place the first platform at the bottom of the screen
-          platforms[i].x = (screen_width - PLATFORM_WIDTH) / 2;  // Centered horizontally
-          platforms[i].y = screen_height - PLATFORM_HEIGHT;      // At the bottom
-      } else {
-          // Randomly position the other platforms
-          platforms[i].x = rand() % (screen_width - PLATFORM_WIDTH);
-          platforms[i].y = screen_height - (i * 50);  // Space platforms vertically
-      }
-      platforms[i].width = PLATFORM_WIDTH;
-      platforms[i].height = PLATFORM_HEIGHT;
-      platforms[i].prev_x = platforms[i].x;
-      platforms[i].prev_y = platforms[i].y;
+    if (i == 0) {
+      // Place the first platform at the bottom of the screen
+      platforms[i].x =
+          (screen_width - PLATFORM_WIDTH) / 2;  // Centered horizontally
+      platforms[i].y = screen_height - PLATFORM_HEIGHT;  // At the bottom
+      platforms[i].is_red = 0;  // The first platform is always safe
+    } else {
+      // Randomly position the other platforms
+      platforms[i].x = rand() % (screen_width - PLATFORM_WIDTH);
+      platforms[i].y = screen_height - (i * 50);  // Space platforms vertically
+
+      // Assign red platforms with a 10% chance
+      platforms[i].is_red = (rand() % 10 == 0);
+    }
+    platforms[i].width = PLATFORM_WIDTH;
+    platforms[i].height = PLATFORM_HEIGHT;
+    platforms[i].prev_x = platforms[i].x;
+    platforms[i].prev_y = platforms[i].y;
   }
 }
 // Draw or erase platforms
 void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
-  unsigned short color =
-      erase ? WHITE : BLACK;  // Use WHITE to erase, BLACK to draw
-
   for (int i = 0; i < MAX_PLATFORMS; i++) {
+    unsigned short color =
+        erase
+            ? WHITE
+            : (platforms[i].is_red ? 0xF800 : BLACK);  // RED for red platforms
+
     for (int x = 0; x < platforms[i].width; x++) {
       for (int y = 0; y < platforms[i].height; y++) {
         int px = platforms[i].x + x;
@@ -347,7 +353,6 @@ void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
     }
   }
 }
-
 // Update platform positions
 void update_platforms(Platform platforms[], int bat_y, int screen_width,
                       int screen_height) {
@@ -367,39 +372,19 @@ void update_platforms(Platform platforms[], int bat_y, int screen_width,
 #define BAT_WIDTH 15
 #define BAT_HEIGHT 16
 
-void check_collision(Platform platforms[], int *bat_x, int *bat_y,
-                     int *velocity_y, int jump_strength) {
-  for (int i = 0; i < MAX_PLATFORMS; i++) {
-    // Check if the bat and platform rectangles intersect
-    if (*bat_x < platforms[i].x + platforms[i].width &&
-        *bat_x + BAT_WIDTH > platforms[i].x &&
-        *bat_y < platforms[i].y + platforms[i].height &&
-        *bat_y + BAT_HEIGHT > platforms[i].y && *velocity_y > 0) {
-      // Snap the bat to the top of the platform
-      *bat_y = platforms[i].y - BAT_HEIGHT;
-      *velocity_y = jump_strength;
+void batAudio(int *samples, int numOfSamples) {
+  struct audio_t *const audiop = (int *)AUDIO_BASE;
+  int i;
 
-      // if collision detected, play the bat jump sound
-      batAudio(samples,samples_n);
-      return;
-    }
+  audiop->control = 0x8;  // clear the output FIFOs
+  audiop->control = 0x0;  // resume input conversion
+  for (i = 0; i < numOfSamples; i++) {
+    // output data if there is space in the output FIFOs
+    while (audiop->warc == 0);
+    audiop->ldata = samples[i];
+    audiop->rdata = samples[i];
   }
 }
-void batAudio(int *samples, int numOfSamples){
- struct audio_t *const audiop = (int*)AUDIO_BASE;
-int i;
-
-  audiop->control = 0x8; // clear the output FIFOs
-  audiop->control = 0x0; // resume input conversion
-  for (i = 0; i < numOfSamples; i++) {
-  // output data if there is space in the output FIFOs
-  while (audiop->warc==0);
-  audiop->ldata = samples[i];
-  audiop->rdata = samples[i];
- }
-
-}
-
 
 void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
                     int move_right, int gravity, int jump_strength,
@@ -481,4 +466,41 @@ void display_score() {
   // Write the packed values to the HEX display registers
   *hex5_hex4_ptr = hex5_hex4_val;
   *hex3_hex0_ptr = hex3_hex0_val;
+}
+
+void check_collision(Platform platforms[], int *bat_x, int *bat_y,
+                     int *velocity_y, int jump_strength) {
+  struct timer_t *const timer = (int *)TIMER_BASE;           // Timer
+  struct PIT_t *const ledp = (int *)LEDR_BASE;               // PIT
+  struct PIT_t *const buttonp = (int *)KEY_BASE;             // Button
+  struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
+  struct PS2_t *const ps2 = (int *)PS2_BASE;                 // PS2
+
+  for (int i = 0; i < MAX_PLATFORMS; i++) {
+    // Check if the bat and platform rectangles intersect
+    if (*bat_x < platforms[i].x + platforms[i].width &&
+        *bat_x + BAT_WIDTH > platforms[i].x &&
+        *bat_y < platforms[i].y + platforms[i].height &&
+        *bat_y + BAT_HEIGHT > platforms[i].y) {
+      if (platforms[i].is_red) {
+        // Instant death on red platform
+        gameStart(vp->fbp, buttonp, ledp);  // Reset the game
+        *bat_x = 160;                       // Reset bat's position
+        *bat_y = 100;
+        *velocity_y = 0;                      // Reset velocity
+        total_distance = 0;                   // Reset the score
+        init_platforms(platforms, 320, 240);  // Reinitialize platforms
+        clear_screen(vp->fbp);
+        return;
+      } else if (*velocity_y > 0) {
+        // Snap the bat to the top of the platform
+        *bat_y = platforms[i].y - BAT_HEIGHT;
+        *velocity_y = jump_strength;
+
+        // Play the bat jump sound
+        batAudio(samples, samples_n);
+        return;
+      }
+    }
+  }
 }
