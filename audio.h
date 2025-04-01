@@ -5,8 +5,8 @@
 extern int samples[];  // Sound data array
 extern int samples_n; // Number of samples in the sound data array
 
-extern int mainSamples[];
-extern int samples_n1;
+extern int mainScreenSamples[];
+extern int num_samples;
 
 
 

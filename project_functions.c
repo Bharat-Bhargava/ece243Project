@@ -166,6 +166,7 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
   clear_screen(fbp);
   buttonp->EDGE = 0xF;  // clear edge bits
   draw_screen(fbp, start_screen);
+  batAudio(mainScreenSamples, num_samples);
   while (1) {
     ledp->DR = buttonp->DR;
     if (buttonp->EDGE & 0x1) {
