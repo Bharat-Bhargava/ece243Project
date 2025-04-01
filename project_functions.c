@@ -6,6 +6,7 @@
 #include "device_structs.h"
 #include "screens.h"
 #include "sprites.h"
+#include "audio.h"
 
 // void initialize_timer(struct timer_t *timer, uint32 period) {
 //   timer->control = 0;  // Disable timer

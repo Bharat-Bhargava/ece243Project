@@ -1,6 +1,6 @@
 MAIN		:= project.c
-HDRS := address_map_niosv.h device_structs.h project_functions.h custom_defines.h sprites.h screens.h interupt.h
-SRCS		:= $(MAIN) project_functions.c sprites.c interupt.c custom_defines.c
+HDRS := address_map_niosv.h device_structs.h project_functions.h custom_defines.h sprites.h screens.h interupt.h audio.h
+SRCS		:= $(MAIN) project_functions.c sprites.c interupt.c custom_defines.c audio_data.c
 
 INSTALL	:= C:/intelFPGA_pro/24.1
 
