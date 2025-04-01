@@ -76,4 +76,6 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
 void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
                     int move_right, int gravity, int jump_strength,
                     int screen_width);
+
+void batAudio(int *samples, int numOfSamples);
 #endif

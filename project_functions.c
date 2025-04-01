@@ -377,10 +377,28 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
       // Snap the bat to the top of the platform
       *bat_y = platforms[i].y - BAT_HEIGHT;
       *velocity_y = jump_strength;
+
+      // if collision detected, play the bat jump sound
+      batAudio(samples,samples_n);
       return;
     }
   }
 }
+void batAudio(int *samples, int numOfSamples){
+ struct audio_t *const audiop = (int*)AUDIO_BASE;
+int i;
+
+  audiop->control = 0x8; // clear the output FIFOs
+  audiop->control = 0x0; // resume input conversion
+  for (i = 0; i < numOfSamples; i++) {
+  // output data if there is space in the output FIFOs
+  while (audiop->warc==0);
+  audiop->ldata = samples[i];
+  audiop->rdata = samples[i];
+ }
+
+}
+
 
 void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
                     int move_right, int gravity, int jump_strength,
