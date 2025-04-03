@@ -156,7 +156,7 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
   clear_screen(fbp);
   buttonp->EDGE = 0xF;  // Clear edge bits
   draw_screen(fbp, start_screen);
-  // batAudio(mainScreenSamples, num_samples);
+  batAudio(mainScreen_samples, mainScreenNum_samples);
 
   // Reset movement state
   move_left = 0;
@@ -173,12 +173,12 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
     } else if (ps2_data == 0x26) {
       draw_screen(fbp, info_screen);
       while (1) {
-        char ps2_data2 = ps2_data;
         if (ps2_data == 0x21) {
           draw_screen(fbp, start_screen);
           break;
         }
       }
+
       continue;
     }
   }
