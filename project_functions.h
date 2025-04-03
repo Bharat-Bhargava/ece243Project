@@ -80,4 +80,5 @@ void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
                     int screen_width);
 
 void batAudio(int *samples, int numOfSamples);
+void gameOver();
 #endif

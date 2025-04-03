@@ -77,6 +77,7 @@ velocity_y = 0;  // No movement initially
 
     // Check if the bat falls below the screen
     if (bat_y > screen_height) {  // Only reset if the bat is below the screen
+      gameOver();
       gameStart(vp->fbp, buttonp, ledp);
       bat_x = 160;  // Reset bat's position
       bat_y = 100;

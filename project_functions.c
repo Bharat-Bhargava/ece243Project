@@ -478,14 +478,11 @@ const unsigned char hex_segs[10] = {
     0x6F   // 9
 };
 
-int highest_y = 240;     // Track the highest position (lowest y value)
-int total_score = 0;     // Initialize the score to 0
-int total_distance = 0;  // Total upward distance climbed
-
 void score(int currentBat_y, int prevBat_y) {
   // If the bat moves upward (currentBat_y < prevBat_y)
   if (currentBat_y < prevBat_y) {
-    total_distance += (prevBat_y - currentBat_y);  // Add the upward distance
+    total_distance +=
+        (prevBat_y - currentBat_y) / 10;  // Divide by 10 to slow down
   }
 }
 void display_score() {
@@ -524,25 +521,26 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         *bat_x + BAT_WIDTH > platforms[i].x &&
         *bat_y + BAT_HEIGHT > platforms[i].y &&
         *bat_y < platforms[i].y + platforms[i].height) {
-      
       if (platforms[i].is_red) {
         // Instant death on red platform
+        gameOver();                         // Call game over function
         gameStart(vp->fbp, buttonp, ledp);  // Go back to the start screen
-        *bat_x = 160;  // Reset bat's position
+        *bat_x = 160;                       // Reset bat's position
         *bat_y = 100;
-        *velocity_y = 0;      // Reset velocity
-        total_distance = 0;  // Reset the score
+        *velocity_y = 0;                      // Reset velocity
+        total_distance = 0;                   // Reset the score
         init_platforms(platforms, 320, 240);  // Reinitialize platforms
-        clear_screen(vp->fbp);  // Clear the screen
+        clear_screen(vp->fbp);                // Clear the screen
         return;  // Exit after handling red platform
       }
 
       if (platforms[i].is_blue) {
         // Handle collision with blue platform
         if (*velocity_y > 0) {  // Only trigger collision if falling
-          *bat_y = platforms[i].y - BAT_HEIGHT;  // Snap bat to the top of the platform
-          *velocity_y = jump_strength;           // Make the bat jump
-          platforms[i].is_blue = 0;              // Mark as no longer blue
+          *bat_y = platforms[i].y -
+                   BAT_HEIGHT;          // Snap bat to the top of the platform
+          *velocity_y = jump_strength;  // Make the bat jump
+          platforms[i].is_blue = 0;     // Mark as no longer blue
         }
       } else if (*velocity_y > 0) {
         // Snap the bat to the top of the platform
@@ -550,6 +548,23 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         *velocity_y = jump_strength;  // Make the bat jump
         return;
       }
+    }
+  }
+}
+
+void gameOver() {
+  struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
+  draw_screen(vp->fbp, game_over_screen);
+  waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds
+
+  fbswap(vp);  // VSYNC
+  batAudio(gameOverSamples, num_samples_gameOver);
+  draw_screen(vp->bfbp, continue_screen);
+  fbswap(vp);  // VSYNC
+
+  while (1) {
+    if (ps2_data == 0x21) {
+      return;
     }
   }
 }

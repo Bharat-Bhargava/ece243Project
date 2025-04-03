@@ -21,6 +21,10 @@
 extern volatile int ps2_data;  // Stores the last PS/2 data byte
 extern volatile int ps2_flag;  // Flag to indicate new PS/2 data
 extern volatile int paused;    // 0 = running, 1 = paused
-extern int hard_mode;  // 0 = normal mode, 1 = hard mode
+extern int hard_mode;          // 0 = normal mode, 1 = hard mode
+
+extern int highest_y;       // Track the highest position (lowest y value)
+extern int total_score;     // Initialize the score to 0
+extern int total_distance;  // Total upward distance climbed
 
 #endif
