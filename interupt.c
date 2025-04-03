@@ -2,17 +2,7 @@
 #include "custom_defines.h"
 #include "device_structs.h"
 
-// void set_PS2_interrput(void){
-//     volatile int *PS2_ptr = (int *)PS2_BASE;
-//     *(PS2_ptr + 1) = 0x1; // enable interrupts
-//     *(PS2_ptr) = 0xFF; // reset
-// }
 
-// void set_PS2_interrput(void) {
-//   struct PS2_t *const ps2 = (int *)PS2_BASE;
-//   ps2->CONTROL = 0x1;  // Enable interrupts (set RE bit)
-//   ps2->DATA = 0xFF;    // Reset the PS/2 device
-// }
 void set_PS2_interrput(void) {
   struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;
 
@@ -29,48 +19,7 @@ void set_PS2_interrput(void) {
     volatile int dummy = ps2->DATA & 0xFF;  // Read and discard data
   }
 }
-// void PS2_ISR(void) {
-//   struct PS2_t *const ps2 = (int *)PS2_BASE;
 
-//   // ps2_data = ps2->DATA & 0xFF;  // Extract the data byte
-//   // ps2_flag = 1;                 // Set the flag
-//   // ps2->CONTROL = 0x1;           // Acknowledge interrupt
-
-//   // Check if RVALID is set (data is available)
-
-//   ps2_data = ps2->DATA & 0xFF;  // Extract the data byte
-//   ps2_flag = 1;                 // Set the flag to indicate new data
-
-//   // Acknowledge the interrupt by clearing the FIFO
-//   // ps2->CONTROL = 0x1;  // Re-en
-// }
-
-// void PS2_ISR(void) {
-//   struct PS2_t *const ps2 = (int *)PS2_BASE;
-//   static int isBreak = 0;  // Flag to track break code sequence
-
-//   // Fully clear the FIFO by reading all available data
-//   while ((ps2->DATA >> 16) & 0xFF) {  // Check RAVAIL (bits 31:16)
-//     int data = ps2->DATA & 0xFF;      // Extract the data byte
-
-//     if (data == 0xF0) {  // Break code detected
-//       isBreak = 1;       // Set the break flag
-//       continue;          // Ignore the break code itself
-//     }
-
-//     if (isBreak) {
-//       isBreak = 0;  // Reset the break flag
-//       continue;     // Ignore key release events
-//     }
-
-//     // Process valid make codes (key press events)
-//     ps2_data = data;  // Store the valid data byte
-//     ps2_flag = 1;     // Set the flag to indicate new data
-//   }
-
-//   // Acknowledge the interrupt by re-enabling interrupts
-//   ps2->CONTROL = 0x1;  // Set RE bit to re-enable interrupts
-// }
 
 void PS2_ISR(void) {
   struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;

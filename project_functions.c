@@ -7,18 +7,7 @@
 #include "screens.h"
 #include "sprites.h"
 
-// void initialize_timer(struct timer_t *timer, uint32 period) {
-//   timer->control = 0;  // Disable timer
-//   timer->periodlo = period & 0xFFFF;
-//   timer->periodhi = (period >> 16) & 0xFFFF;
-//   timer->control = 1;  // Enable timer
-// }
 
-// void set_leds(uint32 value) { *(volatile uint32 *)LEDR_BASE = value; }
-
-// uint32 read_switches(void) { return *(volatile uint32 *)SW_BASE; }
-
-// uint32 read_buttons(void) { return *(volatile uint32 *)KEY_BASE; }
 
 int xn = ACTUAL_X;
 int yn = ACTUAL_Y;
@@ -123,6 +112,7 @@ void waitasec2(float seconds, struct timer_t *timer) {
   timer->status = 0;                   // Reset TO
 }
 
+//Originally from Andreas Moshovos 
 void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
                  int y) {
   int sxi, syi;
@@ -136,6 +126,7 @@ void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
     }
 }
 
+//Edited version to inccorporate erasing 
 void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
                   int prev_x, int prev_y) {
   int sxi, syi;

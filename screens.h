@@ -4,10 +4,7 @@
 #include "custom_defines.h"
 
 // Declare screen arrays
-
-#define WHIRLY_HEIGHT 240
-#define WHIRLY_WIDTH 320
-
+// https://notisrac.github.io/FileToCArray/ was the used website for conversions
 // array size is 153600
 extern const unsigned short start_screen[] = {
     0x18c2, 0x18a2, 0x10a2, 0x10a2, 0x10a2, 0x18a2, 0x10a2, 0x10a2, 0x18a2,

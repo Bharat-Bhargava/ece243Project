@@ -6,14 +6,6 @@
 #include "custom_defines.h"
 #include "device_structs.h"
 
-// Function prototypes
-/*
-void initialize_timer(struct timer_t *timer, uint32 period);
-uint32 read_switches(void);
-uint32 read_buttons(void);
-void set_leds(uint32 value);
-
-*/
 void plot_pixel(int x, int y, short int line_color, struct fb_t *const fbp);
 void clear_screen(struct fb_t *const fbp);
 int abs(int num);
@@ -66,7 +58,7 @@ typedef struct {
   int is_blue;     // 1 if the platform is blue, 0 otherwise
   int velocity_x;  // Horizontal velocity for moving platforms
 } Platform;
-// Function prototypes
+
 void init_platforms(Platform platforms[], int screen_width, int screen_height);
 void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase);
 void update_platforms(Platform platforms[], int bat_y, int screen_width,
