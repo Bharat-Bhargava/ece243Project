@@ -169,12 +169,22 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
 
   while (1) {
     ledp->DR = buttonp->DR;
-    if (buttonp->EDGE & 0x1) {  // Key 1 pressed
+    if (ps2_data == 0x16) {  // Key 1 pressed
       hard_mode = 1;            // Enable hard mode
       break;
-    } else if (buttonp->EDGE & 0x2) {  // Key 2 pressed
+    } else if (ps2_data == 0x1E) {  // Key 2 pressed
       hard_mode = 0;                   // Disable hard mode (normal mode)
       break;
+    } else if (ps2_data == 0x26) {
+      draw_screen(fbp, info_screen);
+      while (1) {
+        char ps2_data2 = ps2_data;
+        if (ps2_data == 0x21) {
+          draw_screen(fbp, start_screen);
+          break;
+        }
+      }
+      continue;
     }
   }
   return;

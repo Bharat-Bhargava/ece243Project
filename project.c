@@ -14,13 +14,12 @@ struct PIT_t *const buttonp = (int *)KEY_BASE;             // Button
 struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
 struct PS2_t *const ps2 = (int *)PS2_BASE;                 // PS2
 
-
-
 extern total_distance;
 int main(void) {
-  gameStart(vp->fbp, buttonp, ledp);
   processor_side_setup();
   set_PS2_interrput();
+
+  gameStart(vp->fbp, buttonp, ledp);
 
   // Initialize variables
   int bat_x = 160;                             // Initial x position of the bat
@@ -42,11 +41,12 @@ int main(void) {
 
   // Initialize platforms
   init_platforms(platforms, screen_width, screen_height);
-  
-// Place the sprite on the first platform
-bat_x = platforms[0].x + (PLATFORM_WIDTH / 2) - (BAT_WIDTH / 2);  // Centered on the platform
-bat_y = platforms[0].y - BAT_HEIGHT;  // On top of the platform
-velocity_y = 0;  // No movement initially
+
+  // Place the sprite on the first platform
+  bat_x = platforms[0].x + (PLATFORM_WIDTH / 2) -
+          (BAT_WIDTH / 2);              // Centered on the platform
+  bat_y = platforms[0].y - BAT_HEIGHT;  // On top of the platform
+  velocity_y = 0;                       // No movement initially
 
   clear_screen(vp->fbp);
 
