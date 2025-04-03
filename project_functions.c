@@ -321,7 +321,9 @@ void init_platforms(Platform platforms[], int screen_width, int screen_height) {
       platforms[i].x =
           (screen_width - platform_width) / 2;  // Centered horizontally
       platforms[i].y = screen_height - platform_height;  // At the bottom
-      platforms[i].is_red = 0;  // The first platform is always safe
+      platforms[i].is_red = 0;      // The first platform is always safe
+      platforms[i].is_blue = 0;     // The first platform is not blue
+      platforms[i].velocity_x = 0;  // No movement for the first platform
     } else {
       // Randomly position the other platforms
       platforms[i].x = rand() % (screen_width - platform_width);
@@ -329,6 +331,15 @@ void init_platforms(Platform platforms[], int screen_width, int screen_height) {
 
       // Assign red platforms with a 10% chance
       platforms[i].is_red = (rand() % 10 == 0);
+
+      // Assign blue platforms with a 15% chance (but not red and blue at the
+      // same time)
+      platforms[i].is_blue = (!platforms[i].is_red && rand() % 7 == 0);
+
+      // Set horizontal velocity for blue platforms
+      platforms[i].velocity_x =
+          platforms[i].is_blue ? (rand() % 3 + 1) * (rand() % 2 == 0 ? 1 : -1)
+                               : 0;
     }
     platforms[i].width = platform_width;
     platforms[i].height = platform_height;
@@ -339,10 +350,16 @@ void init_platforms(Platform platforms[], int screen_width, int screen_height) {
 // Draw or erase platforms
 void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-    unsigned short color =
-        erase
-            ? WHITE
-            : (platforms[i].is_red ? 0xF800 : BLACK);  // RED for red platforms
+    unsigned short color;
+    if (erase) {
+      color = WHITE;  // Erase with background color
+    } else if (platforms[i].is_red) {
+      color = 0xF800;  // RED for red platforms
+    } else if (platforms[i].is_blue) {
+      color = 0x001F;  // BLUE for blue platforms
+    } else {
+      color = BLACK;  // BLACK for normal platforms
+    }
 
     for (int x = 0; x < platforms[i].width; x++) {
       for (int y = 0; y < platforms[i].height; y++) {
@@ -367,14 +384,31 @@ void draw_platforms(struct fb_t *fbp, Platform platforms[], int erase) {
 void update_platforms(Platform platforms[], int bat_y, int screen_width,
                       int screen_height) {
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-    platforms[i].y +=
-        (240 / 2 - bat_y) / 10;  // Move platforms up as the bat moves higher
+    // Move platforms up as the bat moves higher
+    platforms[i].y += (240 / 2 - bat_y) / 10;
+
+    // Move blue platforms left and right
+    if (platforms[i].is_blue) {
+      platforms[i].x += platforms[i].velocity_x;
+
+      // Reverse direction if the platform hits the screen edges
+      if (platforms[i].x <= 0 ||
+          platforms[i].x + platforms[i].width >= screen_width) {
+        platforms[i].velocity_x = -platforms[i].velocity_x;
+      }
+    }
 
     // Recycle platforms that move off the screen
     if (platforms[i].y > screen_height) {
-      platforms[i].x =
-          rand() % (screen_width - PLATFORM_WIDTH);  // New random x position
-      platforms[i].y = -PLATFORM_HEIGHT;             // Place above the screen
+      platforms[i].x = rand() % (screen_width -
+                                 platforms[i].width);  // New random x position
+      platforms[i].y = -platforms[i].height;           // Place above the screen
+      platforms[i].is_red = (rand() % 10 == 0);        // Reassign red platforms
+      platforms[i].is_blue =
+          (!platforms[i].is_red && rand() % 7 == 0);  // Reassign blue platforms
+      platforms[i].velocity_x =
+          platforms[i].is_blue ? (rand() % 3 + 1) * (rand() % 2 == 0 ? 1 : -1)
+                               : 0;
     }
   }
 }
@@ -480,35 +514,35 @@ void display_score() {
 
 void check_collision(Platform platforms[], int *bat_x, int *bat_y,
                      int *velocity_y, int jump_strength) {
-  struct timer_t *const timer = (int *)TIMER_BASE;           // Timer
-  struct PIT_t *const ledp = (int *)LEDR_BASE;               // PIT
-  struct PIT_t *const buttonp = (int *)KEY_BASE;             // Button
-  struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
-  struct PS2_t *const ps2 = (int *)PS2_BASE;                 // PS2
-
   for (int i = 0; i < MAX_PLATFORMS; i++) {
+    struct PIT_t *buttonp = (struct PIT_t *)KEY_BASE;
+    struct PIT_t *ledp = (struct PIT_t *)LEDR_BASE;
+    struct videoout_t *vp = (struct videoout_t *)PIXEL_BUF_CTRL_BASE;
     // Check if the bat and platform rectangles intersect
     if (*bat_x < platforms[i].x + platforms[i].width &&
         *bat_x + BAT_WIDTH > platforms[i].x &&
-        *bat_y < platforms[i].y + platforms[i].height &&
-        *bat_y + BAT_HEIGHT > platforms[i].y) {
+        *bat_y + BAT_HEIGHT > platforms[i].y &&
+        *bat_y < platforms[i].y + platforms[i].height) {
       if (platforms[i].is_red) {
         // Instant death on red platform
-        gameStart(vp->fbp, buttonp, ledp);  // Reset the game
-        *bat_x = 160;                       // Reset bat's position
+        *bat_x = 160;  // Reset bat's position
         *bat_y = 100;
         *velocity_y = 0;                      // Reset velocity
         total_distance = 0;                   // Reset the score
         init_platforms(platforms, 320, 240);  // Reinitialize platforms
-        clear_screen(vp->fbp);
+        clear_screen(vp->fbp);                // Clear the screen
         return;
+      } else if (platforms[i].is_blue) {
+        // Handle collision with blue platform
+        if (*velocity_y > 0) {  // Only trigger collision if falling
+          *bat_y = platforms[i].y - BAT_HEIGHT;  // Snap bat to the top of the platform
+          *velocity_y = jump_strength;           // Make the bat jump
+          platforms[i].is_blue = 0;              // Mark as no longer blue
+        }
       } else if (*velocity_y > 0) {
         // Snap the bat to the top of the platform
         *bat_y = platforms[i].y - BAT_HEIGHT;
-        *velocity_y = jump_strength;
-
-        // Play the bat jump sound
-        batAudio(samples, samples_n);
+        *velocity_y = jump_strength;  // Make the bat jump
         return;
       }
     }

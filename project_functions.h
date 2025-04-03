@@ -63,6 +63,8 @@ typedef struct {
   int prev_x;  // Previous X position (for erasing)
   int prev_y;  // Previous Y position (for erasing)
   int is_red;  // 1 if the platform is red, 0 otherwise
+  int is_blue; // 1 if the platform is blue, 0 otherwise
+  int velocity_x; // Horizontal velocity for moving platforms
 } Platform;
 // Function prototypes
 void init_platforms(Platform platforms[], int screen_width, int screen_height);
