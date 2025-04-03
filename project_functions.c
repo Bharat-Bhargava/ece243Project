@@ -514,25 +514,30 @@ void display_score() {
 
 void check_collision(Platform platforms[], int *bat_x, int *bat_y,
                      int *velocity_y, int jump_strength) {
+  struct PIT_t *buttonp = (struct PIT_t *)KEY_BASE;
+  struct PIT_t *ledp = (struct PIT_t *)LEDR_BASE;
+  struct videoout_t *vp = (struct videoout_t *)PIXEL_BUF_CTRL_BASE;
+
   for (int i = 0; i < MAX_PLATFORMS; i++) {
-    struct PIT_t *buttonp = (struct PIT_t *)KEY_BASE;
-    struct PIT_t *ledp = (struct PIT_t *)LEDR_BASE;
-    struct videoout_t *vp = (struct videoout_t *)PIXEL_BUF_CTRL_BASE;
     // Check if the bat and platform rectangles intersect
     if (*bat_x < platforms[i].x + platforms[i].width &&
         *bat_x + BAT_WIDTH > platforms[i].x &&
         *bat_y + BAT_HEIGHT > platforms[i].y &&
         *bat_y < platforms[i].y + platforms[i].height) {
+      
       if (platforms[i].is_red) {
         // Instant death on red platform
+        gameStart(vp->fbp, buttonp, ledp);  // Go back to the start screen
         *bat_x = 160;  // Reset bat's position
         *bat_y = 100;
-        *velocity_y = 0;                      // Reset velocity
-        total_distance = 0;                   // Reset the score
+        *velocity_y = 0;      // Reset velocity
+        total_distance = 0;  // Reset the score
         init_platforms(platforms, 320, 240);  // Reinitialize platforms
-        clear_screen(vp->fbp);                // Clear the screen
-        return;
-      } else if (platforms[i].is_blue) {
+        clear_screen(vp->fbp);  // Clear the screen
+        return;  // Exit after handling red platform
+      }
+
+      if (platforms[i].is_blue) {
         // Handle collision with blue platform
         if (*velocity_y > 0) {  // Only trigger collision if falling
           *bat_y = platforms[i].y - BAT_HEIGHT;  // Snap bat to the top of the platform
