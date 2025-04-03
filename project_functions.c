@@ -537,10 +537,11 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         *bat_y < platforms[i].y + platforms[i].height) {
       if (platforms[i].is_red) {
         // Instant death on red platform
-        waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds (DELAY)
-        gameOver();                                 // Call game over function
-        gameStart(vp->fbp, buttonp, ledp);  // Go back to the start screen
-        *bat_x = 160;                       // Reset bat's position
+        waitasec(2,
+                 (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds (DELAY)
+        gameOver();                              // Call game over function
+        gameStart(vp->fbp, buttonp, ledp);       // Go back to the start screen
+        *bat_x = 160;                            // Reset bat's position
         *bat_y = 100;
         *velocity_y = 0;                      // Reset velocity
         total_distance = 0;                   // Reset the score
@@ -563,7 +564,7 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         *velocity_y = jump_strength;  // Make the bat jump
 
         // Play jump sound effect
-        // batAudio(samples, samples_n);
+        batAudio(samples, samples_n);
 
         return;
       }
@@ -572,14 +573,19 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
 }
 
 void gameOver() {
+  struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;
+  ps2->CONTROL = 0x0;  // Disable interrupts (set RE bit)
   struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
   draw_screen(vp->fbp, game_over_screen);
+ 
+
   waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds
 
   fbswap(vp);  // VSYNC
   batAudio(gameOverSamples, num_samples_gameOver);
   draw_screen(vp->bfbp, continue_screen);
   fbswap(vp);  // VSYNC
+  ps2->CONTROL = 0x1;  // ReEnable interrupts (set RE bit)
 
   while (1) {
     if (ps2_data == 0x21) {
@@ -587,3 +593,4 @@ void gameOver() {
     }
   }
 }
+
