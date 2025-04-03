@@ -27,4 +27,8 @@ extern int highest_y;       // Track the highest position (lowest y value)
 extern int total_score;     // Initialize the score to 0
 extern int total_distance;  // Total upward distance climbed
 
+ // Key state tracking
+ extern int move_left;
+ extern int move_right;
+
 #endif

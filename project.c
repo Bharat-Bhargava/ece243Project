@@ -32,10 +32,6 @@ int main(void) {
   const int screen_height = 240;  // Height of the screen
   int frame = 0;                  // Current frame for animation
 
-  // Key state tracking
-  int move_left = 0;
-  int move_right = 0;
-
   // Platform data
   Platform platforms[MAX_PLATFORMS];
 
@@ -77,6 +73,7 @@ int main(void) {
 
     // Check if the bat falls below the screen
     if (bat_y > screen_height) {  // Only reset if the bat is below the screen
+      waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds (DELAY)
       gameOver();
       gameStart(vp->fbp, buttonp, ledp);
       bat_x = 160;  // Reset bat's position

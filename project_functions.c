@@ -167,13 +167,17 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
   draw_screen(fbp, start_screen);
   // batAudio(mainScreenSamples, num_samples);
 
+  // Reset movement state
+  move_left = 0;
+  move_right = 0;
+
   while (1) {
     ledp->DR = buttonp->DR;
     if (ps2_data == 0x16) {  // Key 1 pressed
-      hard_mode = 1;            // Enable hard mode
+      hard_mode = 1;         // Enable hard mode
       break;
     } else if (ps2_data == 0x1E) {  // Key 2 pressed
-      hard_mode = 0;                   // Disable hard mode (normal mode)
+      hard_mode = 0;                // Disable hard mode (normal mode)
       break;
     } else if (ps2_data == 0x26) {
       draw_screen(fbp, info_screen);
@@ -533,7 +537,8 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         *bat_y < platforms[i].y + platforms[i].height) {
       if (platforms[i].is_red) {
         // Instant death on red platform
-        gameOver();                         // Call game over function
+        waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds (DELAY)
+        gameOver();                                 // Call game over function
         gameStart(vp->fbp, buttonp, ledp);  // Go back to the start screen
         *bat_x = 160;                       // Reset bat's position
         *bat_y = 100;
@@ -556,6 +561,10 @@ void check_collision(Platform platforms[], int *bat_x, int *bat_y,
         // Snap the bat to the top of the platform
         *bat_y = platforms[i].y - BAT_HEIGHT;
         *velocity_y = jump_strength;  // Make the bat jump
+
+        // Play jump sound effect
+        // batAudio(samples, samples_n);
+
         return;
       }
     }
