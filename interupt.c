@@ -2,7 +2,6 @@
 #include "custom_defines.h"
 #include "device_structs.h"
 
-
 void set_PS2_interrput(void) {
   struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;
 
@@ -19,7 +18,6 @@ void set_PS2_interrput(void) {
     volatile int dummy = ps2->DATA & 0xFF;  // Read and discard data
   }
 }
-
 
 void PS2_ISR(void) {
   struct PS2_t *const ps2 = (struct PS2_t *)PS2_BASE;

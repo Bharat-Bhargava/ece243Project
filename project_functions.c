@@ -7,8 +7,6 @@
 #include "screens.h"
 #include "sprites.h"
 
-
-
 int xn = ACTUAL_X;
 int yn = ACTUAL_Y;
 
@@ -112,7 +110,7 @@ void waitasec2(float seconds, struct timer_t *timer) {
   timer->status = 0;                   // Reset TO
 }
 
-//Originally from Andreas Moshovos 
+// Originally from Andreas Moshovos
 void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
                  int y) {
   int sxi, syi;
@@ -126,7 +124,7 @@ void sprite_draw(struct fb_t *const fbp, unsigned short sprite[], int x,
     }
 }
 
-//Edited version to inccorporate erasing 
+// Edited version to inccorporate erasing
 void sprite_draw2(struct fb_t *const fbp, unsigned short sprite[], int x, int y,
                   int prev_x, int prev_y) {
   int sxi, syi;
@@ -156,7 +154,13 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
   clear_screen(fbp);
   buttonp->EDGE = 0xF;  // Clear edge bits
   draw_screen(fbp, start_screen);
-  batAudio(mainScreen_samples, mainScreenNum_samples);
+
+  while (1) {
+    batAudio(mainScreen_samples, mainScreenNum_samples);
+    if ((ps2_data == 0x16) || (ps2_data == 0x1E) || (ps2_data == 0x26)) {
+      break;
+    }
+  }
 
   // Reset movement state
   move_left = 0;
@@ -173,7 +177,6 @@ void gameStart(struct fb_t *const fbp, struct PIT_t *buttonp,
     } else if (ps2_data == 0x26) {
       draw_screen(fbp, info_screen);
       while (1) {
-        
         if (ps2_data == 0x21) {
           draw_screen(fbp, start_screen);
           break;
@@ -569,14 +572,13 @@ void gameOver() {
   ps2->CONTROL = 0x0;  // Disable interrupts (set RE bit)
   struct videoout_t *const vp = (int *)PIXEL_BUF_CTRL_BASE;  // Video
   draw_screen(vp->fbp, game_over_screen);
- 
 
   waitasec(2, (struct timer_t *)TIMER_BASE);  // Wait for 2 seconds
 
   fbswap(vp);  // VSYNC
   batAudio(gameOverSamples, num_samples_gameOver);
   draw_screen(vp->bfbp, continue_screen);
-  fbswap(vp);  // VSYNC
+  fbswap(vp);          // VSYNC
   ps2->CONTROL = 0x1;  // ReEnable interrupts (set RE bit)
 
   while (1) {
@@ -585,4 +587,3 @@ void gameOver() {
     }
   }
 }
-
