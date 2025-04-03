@@ -56,15 +56,15 @@ void draw_sprite(struct videoout_t *vp, int frame, int bat_x, int bat_y,
 
 // Define the Platform struct
 typedef struct {
-  int x;       // X position of the platform
-  int y;       // Y position of the platform
-  int width;   // Width of the platform
-  int height;  // Height of the platform
-  int prev_x;  // Previous X position (for erasing)
-  int prev_y;  // Previous Y position (for erasing)
-  int is_red;  // 1 if the platform is red, 0 otherwise
-  int is_blue; // 1 if the platform is blue, 0 otherwise
-  int velocity_x; // Horizontal velocity for moving platforms
+  int x;           // X position of the platform
+  int y;           // Y position of the platform
+  int width;       // Width of the platform
+  int height;      // Height of the platform
+  int prev_x;      // Previous X position (for erasing)
+  int prev_y;      // Previous Y position (for erasing)
+  int is_red;      // 1 if the platform is red, 0 otherwise
+  int is_blue;     // 1 if the platform is blue, 0 otherwise
+  int velocity_x;  // Horizontal velocity for moving platforms
 } Platform;
 // Function prototypes
 void init_platforms(Platform platforms[], int screen_width, int screen_height);
@@ -81,4 +81,5 @@ void update_physics(int *bat_x, int *bat_y, int *velocity_y, int move_left,
 
 void batAudio(int *samples, int numOfSamples);
 void gameOver();
+
 #endif
