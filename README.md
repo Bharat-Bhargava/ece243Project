@@ -9,12 +9,11 @@ This project implements a platformer game on the DE1-SoC FPGA using C. The game 
 - [Dependencies](#dependencies)
 - [Setup and Compilation](#setup-and-compilation)
 - [How to Play](#how-to-play)
-- [Code Highlights](#code-highlights)
-- [License](#license)
+- [Video Demo](#video-demo)
 
 ## Overview
 The game is designed to run on the DE1-SoC FPGA platform. It uses hardware peripherals such as:
-- **Video Output**: For rendering the game graphics.
+- **Video Output**: For rendering the game graphics. (done Via VGA)
 - **PS2 Keyboard**: For player input.
 - **Timer**: For managing game timing and delays.
 
@@ -23,7 +22,24 @@ The game logic includes platform generation, sprite rendering, and physics simul
 ## Features
 - **Platformer Gameplay**: Jump between platforms while avoiding falling.
 - **Sprite Rendering**: Dynamic sprite drawing and animation.
-- **Keyboard Input**: Control the bat using a PS2 keyboard.
-- **Hardware Acceleration**: Utilizes FPGA-specific hardware for performance.
+- **Keyboard Input**: Control the bat using a PS2 keyboard.(interupt based)- Control Hedwig's flight 
+- **Hardware Acceleration**: Optimized for the DE1-SoC FPGA using the Nios V processor.
 
 ## Project Structure
+
+
+## Dependencies
+- **Intel FPGA Quartus Prime**: For programming the DE1-SoC FPGA.
+- **C Compiler**: Compatible with the Nios V soft processor.
+- **DE1-SoC Board**: Required to run the game.
+- **GDB Setup with NIOS V** : more info can be found here: https://fpgacademy.org/tutorials.html 
+
+## How to Play
+
+- Connect a PS2 keyboard to the DE1-SoC FPGA.
+- Use the spacebar to control Hedwig's flight.
+- Navigate through obstacles without colliding.
+- The game ends if Hedwig crashes into an obstacle.
+
+## Video Demo
+- Soon!
