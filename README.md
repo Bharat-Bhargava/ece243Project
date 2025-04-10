@@ -1,4 +1,4 @@
-# Platformer Game for DE1-SoC FPGA
+# Platformer Game for DE1-SoC (NIOS V)
 
 This project implements a platformer game on the DE1-SoC FPGA using C. The game features a bat character that can jump between platforms, with gravity and collision mechanics. The project utilizes hardware-specific features like video output, PS2 input, and timers.
 
